@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { KnowledgeCard } from '../../types/knowledge';
 import { getCategoryById } from '../../constants/categories';
 import Tag from '../ui/Tag';
@@ -8,6 +10,8 @@ import { COLORS, GRADIENTS, RADIUS, SPACING, TYPOGRAPHY } from '../../constants/
 
 interface CardFrontProps {
   card: KnowledgeCard;
+  isSpeaking: boolean;
+  onToggleSpeech: () => void;
 }
 
 const DIFFICULTY_LABEL: Record<KnowledgeCard['difficulty'], string> = {
@@ -22,9 +26,14 @@ const DIFFICULTY_COLOR: Record<KnowledgeCard['difficulty'], string> = {
   advanced: COLORS.negative,
 };
 
-export default function CardFront({ card }: CardFrontProps) {
+export default function CardFront({ card, isSpeaking, onToggleSpeech }: CardFrontProps) {
   const category = getCategoryById(card.category);
   const difficultyColor = DIFFICULTY_COLOR[card.difficulty];
+
+  const speakerTap = Gesture.Tap().onEnd(() => {
+    'worklet';
+    runOnJS(onToggleSpeech)();
+  });
 
   return (
     <LinearGradient colors={GRADIENTS.card} style={styles.container}>
@@ -60,6 +69,13 @@ export default function CardFront({ card }: CardFrontProps) {
       <View style={styles.flipHint}>
         <Text style={styles.flipHintText}>Tap card to learn more →</Text>
       </View>
+
+      {/* Speaker button — absolutely positioned top-right */}
+      <GestureDetector gesture={speakerTap}>
+        <View style={styles.speakerButton}>
+          <Text style={styles.speakerIcon}>{isSpeaking ? '🔇' : '🔊'}</Text>
+        </View>
+      </GestureDetector>
     </LinearGradient>
   );
 }
@@ -135,5 +151,17 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.xs,
     color: COLORS.textTertiary,
     fontStyle: 'italic',
+  },
+  speakerButton: {
+    position: 'absolute',
+    top: SPACING.xl,
+    right: SPACING.xl,
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    borderRadius: RADIUS.full,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  speakerIcon: {
+    fontSize: 18,
   },
 });

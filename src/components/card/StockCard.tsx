@@ -20,6 +20,8 @@ interface KnowledgeCardProps {
   onFlipChange: (flipped: boolean) => void;
   onDecision: (decision: 'interested' | 'not_interested') => void;
   hasResponded: boolean;
+  isSpeaking: boolean;
+  onToggleSpeech: () => void;
 }
 
 export default function KnowledgeCardView({
@@ -28,6 +30,8 @@ export default function KnowledgeCardView({
   onFlipChange,
   onDecision,
   hasResponded,
+  isSpeaking,
+  onToggleSpeech,
 }: KnowledgeCardProps) {
   const { panGesture, cardStyle, interestedOverlayStyle, notInterestedOverlayStyle } =
     useSwipeGesture({
@@ -69,8 +73,8 @@ export default function KnowledgeCardView({
         <CardFlipWrapper
           isFlipped={isFlipped}
           onFlipChange={onFlipChange}
-          front={<CardFront card={card} />}
-          back={<CardBack card={card} />}
+          front={<CardFront card={card} isSpeaking={isSpeaking} onToggleSpeech={onToggleSpeech} />}
+          back={<CardBack card={card} isSpeaking={isSpeaking} onToggleSpeech={onToggleSpeech} />}
         />
       </Animated.View>
     </GestureDetector>

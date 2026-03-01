@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { KnowledgeCard } from '../../types/knowledge';
 import { getCategoryById } from '../../constants/categories';
 import Tag from '../ui/Tag';
@@ -9,10 +11,17 @@ import { COLORS, GRADIENTS, RADIUS, SPACING, TYPOGRAPHY } from '../../constants/
 
 interface CardBackProps {
   card: KnowledgeCard;
+  isSpeaking: boolean;
+  onToggleSpeech: () => void;
 }
 
-export default function CardBack({ card }: CardBackProps) {
+export default function CardBack({ card, isSpeaking, onToggleSpeech }: CardBackProps) {
   const category = getCategoryById(card.category);
+
+  const speakerTap = Gesture.Tap().onEnd(() => {
+    'worklet';
+    runOnJS(onToggleSpeech)();
+  });
 
   return (
     <LinearGradient colors={GRADIENTS.cardPremium} style={styles.container}>
@@ -59,6 +68,13 @@ export default function CardBack({ card }: CardBackProps) {
         {/* Back flip hint */}
         <Text style={styles.flipHint}>← Tap card to go back</Text>
       </ScrollView>
+
+      {/* Speaker button — absolutely positioned top-right */}
+      <GestureDetector gesture={speakerTap}>
+        <View style={styles.speakerButton}>
+          <Text style={styles.speakerIcon}>{isSpeaking ? '🔇' : '🔊'}</Text>
+        </View>
+      </GestureDetector>
     </LinearGradient>
   );
 }
@@ -134,5 +150,17 @@ const styles = StyleSheet.create({
     color: COLORS.textTertiary,
     fontStyle: 'italic',
     marginTop: SPACING.md,
+  },
+  speakerButton: {
+    position: 'absolute',
+    top: SPACING.xl,
+    right: SPACING.xl,
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    borderRadius: RADIUS.full,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  speakerIcon: {
+    fontSize: 18,
   },
 });

@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useDailyCardStore } from '../../store/useDailyCardStore';
 import { useNotesStore } from '../../store/useNotesStore';
 import { useUIStore } from '../../store/useUIStore';
+import { useSpeech } from '../../hooks/useSpeech';
 import KnowledgeCardView from '../../components/card/StockCard';
 import Button from '../../components/ui/Button';
 import { COLORS, GRADIENTS, SPACING, TYPOGRAPHY } from '../../constants/theme';
@@ -15,11 +16,13 @@ export default function HomeScreen() {
   const { todayCard, response, setResponse } = useDailyCardStore();
   const { addNote } = useNotesStore();
   const { isCardFlipped, setIsCardFlipped, showSnackbar } = useUIStore();
+  const { isSpeaking, toggle, stop } = useSpeech();
 
   const hasResponded = response !== null;
 
   const handleDecision = useCallback(
     (decision: 'interested' | 'not_interested') => {
+      stop();
       setResponse(decision);
       if (decision === 'interested') {
         addNote(todayCard);
@@ -56,6 +59,8 @@ export default function HomeScreen() {
               onFlipChange={setIsCardFlipped}
               onDecision={handleDecision}
               hasResponded={hasResponded}
+              isSpeaking={isSpeaking}
+              onToggleSpeech={() => toggle(todayCard)}
             />
           )}
         </View>
