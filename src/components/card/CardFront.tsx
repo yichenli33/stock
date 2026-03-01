@@ -1,109 +1,64 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stock } from '../../types/stock';
-import { Timeframe } from '../../constants/config';
-import PriceLineChart from '../chart/PriceLineChart';
-import TimeframeSelector from '../chart/TimeframeSelector';
+import { KnowledgeCard } from '../../types/knowledge';
+import { getCategoryById } from '../../constants/categories';
 import Tag from '../ui/Tag';
-import { getPriceDataForTimeframe } from '../../data/mockPriceHistory';
-import { formatPrice, formatPercent, formatMarketCap } from '../../utils/formatters';
-import { colorForChange } from '../../utils/colorForChange';
 import { COLORS, GRADIENTS, RADIUS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.88;
-
 interface CardFrontProps {
-  stock: Stock;
-  timeframe: Timeframe;
-  onTimeframeChange: (tf: Timeframe) => void;
-  onFlipHint?: () => void;
+  card: KnowledgeCard;
 }
 
-export default function CardFront({
-  stock,
-  timeframe,
-  onTimeframeChange,
-}: CardFrontProps) {
-  const priceData = getPriceDataForTimeframe(stock.ticker, timeframe);
-  const changeColor = colorForChange(stock.priceChange1DPercent);
-  const changeForTimeframe =
-    timeframe === '1W'
-      ? stock.priceChange1W
-      : timeframe === '1M'
-      ? stock.priceChange1M
-      : stock.priceChange3M;
+const DIFFICULTY_LABEL: Record<KnowledgeCard['difficulty'], string> = {
+  beginner: 'Beginner',
+  intermediate: 'Intermediate',
+  advanced: 'Advanced',
+};
+
+const DIFFICULTY_COLOR: Record<KnowledgeCard['difficulty'], string> = {
+  beginner: COLORS.positive,
+  intermediate: COLORS.accent,
+  advanced: COLORS.negative,
+};
+
+export default function CardFront({ card }: CardFrontProps) {
+  const category = getCategoryById(card.category);
+  const difficultyColor = DIFFICULTY_COLOR[card.difficulty];
 
   return (
     <LinearGradient colors={GRADIENTS.card} style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.logoPlaceholder}>
-          <LinearGradient
-            colors={[stock.accentColor + '80', stock.accentColor + '40']}
-            style={styles.logoGradient}
-          >
-            <Text style={styles.logoText}>{stock.logoInitials}</Text>
-          </LinearGradient>
+      {/* Top row: category badge + difficulty chip */}
+      <View style={styles.topRow}>
+        <View style={[styles.categoryBadge, { backgroundColor: card.accentColor + '25', borderColor: card.accentColor + '60' }]}>
+          <Text style={styles.categoryEmoji}>{category.emoji}</Text>
+          <Text style={[styles.categoryLabel, { color: card.accentColor }]}>{category.label}</Text>
         </View>
-        <View style={styles.headerInfo}>
-          <Text style={styles.ticker}>{stock.ticker}</Text>
-          <Text style={styles.companyName} numberOfLines={1}>
-            {stock.companyName}
+        <View style={[styles.difficultyChip, { backgroundColor: difficultyColor + '20', borderColor: difficultyColor + '50' }]}>
+          <Text style={[styles.difficultyText, { color: difficultyColor }]}>
+            {DIFFICULTY_LABEL[card.difficulty]}
           </Text>
         </View>
-        <View style={styles.priceContainer}>
-          <Text style={styles.price}>{formatPrice(stock.currentPrice)}</Text>
-          <View style={[styles.changeBadge, { backgroundColor: changeColor + '20' }]}>
-            <Text style={[styles.changeText, { color: changeColor }]}>
-              {formatPercent(stock.priceChange1DPercent)}
-            </Text>
-          </View>
-        </View>
       </View>
 
-      {/* Sector tag + market cap */}
-      <View style={styles.metaRow}>
-        <Tag label={stock.sector.toUpperCase()} color={stock.accentColor} />
-        <Text style={styles.marketCap}>Mkt Cap {formatMarketCap(stock.marketCap)}</Text>
+      {/* Concept title */}
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>{card.title}</Text>
       </View>
 
-      {/* Chart */}
-      <View style={styles.chartContainer}>
-        <PriceLineChart
-          data={priceData}
-          width={CARD_WIDTH - SPACING.xl * 2}
-          height={110}
-          color={changeForTimeframe >= 0 ? COLORS.positive : COLORS.negative}
-        />
-      </View>
-
-      {/* Timeframe selector */}
-      <View style={styles.timeframeRow}>
-        <TimeframeSelector
-          selected={timeframe}
-          onChange={onTimeframeChange}
-          accentColor={stock.accentColor}
-        />
-        <Text style={styles.periodChange}>
-          <Text style={{ color: colorForChange(changeForTimeframe) }}>
-            {formatPercent(changeForTimeframe)}
-          </Text>
-          <Text style={styles.periodLabel}> ({timeframe})</Text>
-        </Text>
-      </View>
+      {/* Teaser */}
+      <Text style={styles.teaser}>{card.teaser}</Text>
 
       {/* Tags */}
       <View style={styles.tagsRow}>
-        {stock.tags.slice(0, 3).map((tag) => (
-          <Tag key={tag} label={tag} color={stock.accentColor} />
+        {card.tags.slice(0, 3).map((tag) => (
+          <Tag key={tag} label={tag} color={card.accentColor} />
         ))}
       </View>
 
       {/* Flip hint */}
       <View style={styles.flipHint}>
-        <Text style={styles.flipHintText}>Tap card to see why it's recommended →</Text>
+        <Text style={styles.flipHintText}>Tap card to learn more →</Text>
       </View>
     </LinearGradient>
   );
@@ -114,89 +69,67 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: RADIUS['2xl'],
     padding: SPACING.xl,
-    gap: SPACING.md,
+    gap: SPACING.lg,
+    justifyContent: 'center',
   },
-  header: {
+  topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.md,
+    justifyContent: 'space-between',
   },
-  logoPlaceholder: {
-    borderRadius: RADIUS.md,
-    overflow: 'hidden',
-  },
-  logoGradient: {
-    width: 48,
-    height: 48,
+  categoryBadge: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: RADIUS.md,
-  },
-  logoText: {
-    fontSize: TYPOGRAPHY.md,
-    fontWeight: TYPOGRAPHY.bold,
-    color: COLORS.textPrimary,
-    letterSpacing: 0.5,
-  },
-  headerInfo: { flex: 1 },
-  ticker: {
-    fontSize: TYPOGRAPHY.xl,
-    fontWeight: TYPOGRAPHY.bold,
-    color: COLORS.textPrimary,
-    letterSpacing: 0.5,
-  },
-  companyName: {
-    fontSize: TYPOGRAPHY.sm,
-    color: COLORS.textSecondary,
-  },
-  priceContainer: { alignItems: 'flex-end', gap: 4 },
-  price: {
-    fontSize: TYPOGRAPHY.xl,
-    fontWeight: TYPOGRAPHY.bold,
-    color: COLORS.textPrimary,
-  },
-  changeBadge: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 2,
+    gap: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
     borderRadius: RADIUS.full,
+    borderWidth: 1,
   },
-  changeText: {
-    fontSize: TYPOGRAPHY.xs,
+  categoryEmoji: {
+    fontSize: 16,
+  },
+  categoryLabel: {
+    fontSize: TYPOGRAPHY.sm,
     fontWeight: TYPOGRAPHY.semibold,
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  difficultyChip: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
   },
-  marketCap: {
+  difficultyText: {
     fontSize: TYPOGRAPHY.xs,
-    color: COLORS.textTertiary,
+    fontWeight: TYPOGRAPHY.semibold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  chartContainer: {
-    alignItems: 'center',
-    marginVertical: SPACING.xs,
+  titleContainer: {
+    marginVertical: SPACING.md,
   },
-  timeframeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  title: {
+    fontSize: TYPOGRAPHY['3xl'],
+    fontWeight: TYPOGRAPHY.bold,
+    color: COLORS.textPrimary,
+    lineHeight: TYPOGRAPHY['3xl'] * 1.2,
+    textAlign: 'center',
   },
-  periodChange: {
-    fontSize: TYPOGRAPHY.sm,
+  teaser: {
+    fontSize: TYPOGRAPHY.base,
     color: COLORS.textSecondary,
-  },
-  periodLabel: {
-    color: COLORS.textTertiary,
+    lineHeight: TYPOGRAPHY.base * 1.6,
+    textAlign: 'center',
   },
   tagsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: SPACING.xs,
+    justifyContent: 'center',
   },
   flipHint: {
     alignItems: 'center',
-    marginTop: SPACING.xs,
+    marginTop: SPACING.sm,
   },
   flipHintText: {
     fontSize: TYPOGRAPHY.xs,

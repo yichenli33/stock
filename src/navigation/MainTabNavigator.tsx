@@ -3,9 +3,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet } from 'react-native';
 import { TabParamList } from './types';
 import HomeScreen from '../screens/home/HomeScreen';
-import WatchlistScreen from '../screens/watchlist/WatchlistScreen';
+import NotesScreen from '../screens/notes/NotesScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
-import { COLORS, RADIUS, TYPOGRAPHY } from '../constants/theme';
+import { COLORS, TYPOGRAPHY } from '../constants/theme';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -38,16 +38,16 @@ export default function MainTabNavigator() {
         component={HomeScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} label="Today" icon="📈" />
+            <TabIcon focused={focused} label="Today" icon="📚" />
           ),
         }}
       />
       <Tab.Screen
-        name="Watchlist"
-        component={WatchlistScreen}
+        name="Notes"
+        component={NotesScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} label="Watchlist" icon="⭐" />
+            <TabIcon focused={focused} label="Notes" icon="📝" />
           ),
         }}
       />

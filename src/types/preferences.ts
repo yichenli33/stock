@@ -1,7 +1,8 @@
-import { SectorId } from '../constants/sectors';
+import { CategoryId } from '../constants/categories';
+import { Difficulty } from './knowledge';
 
 export interface UserPreferences {
   onboardingComplete: boolean;
-  selectedSectors: SectorId[];
-  riskTolerance: number; // 0–100 slider value
+  selectedCategories: CategoryId[];
+  learningLevel: Difficulty;
 }

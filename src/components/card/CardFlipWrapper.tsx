@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { runOnJS } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useCardFlip } from '../../hooks/useCardFlip';
 
@@ -27,8 +27,7 @@ export default function CardFlipWrapper({
     .maxDuration(250)
     .onEnd(() => {
       'worklet';
-      // runOnJS because flip changes JS state too
-      flip();
+      runOnJS(flip)();
     });
 
   return (

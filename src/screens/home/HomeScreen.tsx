@@ -1,85 +1,35 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import React, { useCallback } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCardStore } from '../../store/useCardStore';
+import { useDailyCardStore } from '../../store/useDailyCardStore';
+import { useNotesStore } from '../../store/useNotesStore';
 import { useUIStore } from '../../store/useUIStore';
-import { useWatchlist } from '../../hooks/useWatchlist';
-import StockCard from '../../components/card/StockCard';
+import KnowledgeCardView from '../../components/card/StockCard';
 import Button from '../../components/ui/Button';
-import { COLORS, GRADIENTS, SPACING, TYPOGRAPHY, RADIUS, ANIMATION } from '../../constants/theme';
+import { COLORS, GRADIENTS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { formatDate } from '../../utils/formatters';
 import { getTodayISO } from '../../utils/dateHelpers';
 
-const { width } = Dimensions.get('window');
-const TAB_WIDTH = (width - SPACING['2xl'] * 2) / 2;
-
-type HomeTab = 'proprietary' | 'institutional';
-
 export default function HomeScreen() {
-  const [activeTab, setActiveTab] = useState<HomeTab>('proprietary');
-  const underlineX = useSharedValue(0);
+  const { todayCard, response, setResponse } = useDailyCardStore();
+  const { addNote } = useNotesStore();
+  const { isCardFlipped, setIsCardFlipped, showSnackbar } = useUIStore();
 
-  const {
-    proprietaryStock,
-    institutionalStock,
-    proprietaryResponse,
-    institutionalResponse,
-    selectedTimeframe,
-    respondProprietary,
-    respondInstitutional,
-    setTimeframe,
-  } = useCardStore();
-
-  const {
-    isProprietaryCardFlipped,
-    isInstitutionalCardFlipped,
-    setProprietaryFlipped,
-    setInstitutionalFlipped,
-    showSnackbar,
-  } = useUIStore();
-
-  const { addToWatchlist } = useWatchlist();
-
-  const switchTab = useCallback((tab: HomeTab) => {
-    setActiveTab(tab);
-    underlineX.value = withTiming(tab === 'proprietary' ? 0 : TAB_WIDTH, {
-      duration: ANIMATION.normal,
-    });
-  }, []);
-
-  const underlineStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: underlineX.value }],
-  }));
-
-  const isProprietary = activeTab === 'proprietary';
-  const stock = isProprietary ? proprietaryStock : institutionalStock;
-  const response = isProprietary ? proprietaryResponse : institutionalResponse;
-  const isFlipped = isProprietary ? isProprietaryCardFlipped : isInstitutionalCardFlipped;
-  const setFlipped = isProprietary ? setProprietaryFlipped : setInstitutionalFlipped;
   const hasResponded = response !== null;
 
   const handleDecision = useCallback(
     (decision: 'interested' | 'not_interested') => {
-      if (isProprietary) {
-        respondProprietary(decision);
-      } else {
-        respondInstitutional(decision);
-      }
-
+      setResponse(decision);
       if (decision === 'interested') {
-        addToWatchlist(stock);
+        addNote(todayCard);
+        showSnackbar('Saved to Notes ⭐', 'success');
       } else {
-        showSnackbar(`${stock.ticker} dismissed`, 'info');
+        showSnackbar('Come back tomorrow for a new concept!', 'info');
       }
     },
-    [isProprietary, stock],
+    [todayCard],
   );
-
-  const handleButtonDecision = (decision: 'interested' | 'not_interested') => {
-    handleDecision(decision);
-  };
 
   return (
     <LinearGradient colors={GRADIENTS.background} style={styles.container}>
@@ -87,59 +37,23 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Today's Pick</Text>
+            <Text style={styles.greeting}>Today's Concept</Text>
             <Text style={styles.date}>{formatDate(getTodayISO())}</Text>
           </View>
           <View style={styles.streakBadge}>
-            <Text style={styles.streakText}>🔥 Daily</Text>
-          </View>
-        </View>
-
-        {/* Top Tab Switcher */}
-        <View style={styles.tabContainer}>
-          <View style={styles.tabs}>
-            <TouchableOpacity
-              style={styles.tab}
-              onPress={() => switchTab('proprietary')}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.tabText, isProprietary && styles.tabTextActive]}>
-                ⚡ Algorithm Pick
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.tab}
-              onPress={() => switchTab('institutional')}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.tabText, !isProprietary && styles.tabTextActive]}>
-                🏛 Institutional
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.underlineTrack}>
-            <Animated.View
-              style={[styles.underline, underlineStyle, { backgroundColor: stock.accentColor }]}
-            />
+            <Text style={styles.streakText}>📚 Daily</Text>
           </View>
         </View>
 
         {/* Card Area */}
         <View style={styles.cardArea}>
           {hasResponded ? (
-            <RespondedState
-              decision={response!.response}
-              ticker={stock.ticker}
-            />
+            <RespondedState decision={response!} title={todayCard.title} />
           ) : (
-            <StockCard
-              key={`${activeTab}-${stock.ticker}`}
-              stock={stock}
-              type={activeTab}
-              timeframe={selectedTimeframe}
-              isFlipped={isFlipped}
-              onFlipChange={setFlipped}
-              onTimeframeChange={setTimeframe}
+            <KnowledgeCardView
+              card={todayCard}
+              isFlipped={isCardFlipped}
+              onFlipChange={setIsCardFlipped}
               onDecision={handleDecision}
               hasResponded={hasResponded}
             />
@@ -150,18 +64,18 @@ export default function HomeScreen() {
         {!hasResponded && (
           <View style={styles.actionButtons}>
             <Button
-              label="✕  Pass"
-              onPress={() => handleButtonDecision('not_interested')}
+              label="✕  Skip"
+              onPress={() => handleDecision('not_interested')}
               variant="outline"
               size="large"
-              style={styles.passButton}
+              style={styles.skipButton}
             />
             <Button
-              label="⭐ Interested"
-              onPress={() => handleButtonDecision('interested')}
+              label="⭐ Save to Notes"
+              onPress={() => handleDecision('interested')}
               variant="success"
               size="large"
-              style={styles.interestedButton}
+              style={styles.saveButton}
             />
           </View>
         )}
@@ -172,22 +86,22 @@ export default function HomeScreen() {
 
 function RespondedState({
   decision,
-  ticker,
+  title,
 }: {
   decision: 'interested' | 'not_interested';
-  ticker: string;
+  title: string;
 }) {
   const isInterested = decision === 'interested';
   return (
     <View style={styles.respondedContainer}>
-      <Text style={styles.respondedEmoji}>{isInterested ? '⭐' : '✕'}</Text>
-      <Text style={[styles.respondedTitle, { color: isInterested ? COLORS.positive : COLORS.negative }]}>
-        {isInterested ? 'Added to Watchlist!' : 'Stock Dismissed'}
+      <Text style={styles.respondedEmoji}>{isInterested ? '⭐' : '✓'}</Text>
+      <Text style={[styles.respondedTitle, { color: isInterested ? COLORS.positive : COLORS.accent }]}>
+        {isInterested ? 'Saved to Notes!' : 'See You Tomorrow!'}
       </Text>
       <Text style={styles.respondedSubtitle}>
         {isInterested
-          ? `${ticker} has been saved to your watchlist. Check back tomorrow for a new pick!`
-          : `You passed on ${ticker}. A new recommendation will appear tomorrow.`}
+          ? `"${title}" has been saved to your notes. Come back tomorrow for a new concept!`
+          : `You skipped "${title}". A new concept will appear tomorrow.`}
       </Text>
     </View>
   );
@@ -216,7 +130,7 @@ const styles = StyleSheet.create({
   },
   streakBadge: {
     backgroundColor: COLORS.bgCard,
-    borderRadius: RADIUS.full,
+    borderRadius: 999,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
     borderWidth: 1,
@@ -226,37 +140,6 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sm,
     color: COLORS.textSecondary,
     fontWeight: TYPOGRAPHY.medium,
-  },
-  tabContainer: {
-    marginHorizontal: SPACING['2xl'],
-    marginBottom: SPACING.base,
-  },
-  tabs: {
-    flexDirection: 'row',
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-  },
-  tabText: {
-    fontSize: TYPOGRAPHY.sm,
-    fontWeight: TYPOGRAPHY.medium,
-    color: COLORS.textTertiary,
-  },
-  tabTextActive: {
-    color: COLORS.textPrimary,
-    fontWeight: TYPOGRAPHY.semibold,
-  },
-  underlineTrack: {
-    height: 2,
-    backgroundColor: COLORS.border,
-    borderRadius: RADIUS.full,
-  },
-  underline: {
-    height: 2,
-    width: TAB_WIDTH,
-    borderRadius: RADIUS.full,
   },
   cardArea: {
     flex: 1,
@@ -269,10 +152,10 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING['2xl'],
     gap: SPACING.md,
   },
-  passButton: {
+  skipButton: {
     flex: 1,
   },
-  interestedButton: {
+  saveButton: {
     flex: 1.5,
   },
   respondedContainer: {

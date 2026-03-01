@@ -2,23 +2,17 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useWatchlistStore } from '../../store/useWatchlistStore';
-import { useWatchlist } from '../../hooks/useWatchlist';
-import WatchlistItem from '../../components/watchlist/WatchlistItem';
-import WatchlistEmpty from '../../components/watchlist/WatchlistEmpty';
+import { useNotesStore } from '../../store/useNotesStore';
+import NoteItem from '../../components/notes/NoteItem';
+import NotesEmpty from '../../components/notes/NotesEmpty';
+import { NoteEntry } from '../../types/knowledge';
 import { COLORS, GRADIENTS, SPACING, TYPOGRAPHY } from '../../constants/theme';
-import { WatchlistEntry } from '../../types/watchlist';
 
-export default function WatchlistScreen() {
-  const { entries } = useWatchlistStore();
-  const { removeFromWatchlist } = useWatchlist();
+export default function NotesScreen() {
+  const { entries, removeNote } = useNotesStore();
 
-  const renderItem = ({ item, index }: { item: WatchlistEntry; index: number }) => (
-    <WatchlistItem
-      entry={item}
-      index={index}
-      onRemove={(ticker) => removeFromWatchlist(item.stock)}
-    />
+  const renderItem = ({ item }: { item: NoteEntry }) => (
+    <NoteItem entry={item} onRemove={removeNote} />
   );
 
   return (
@@ -26,21 +20,21 @@ export default function WatchlistScreen() {
       <SafeAreaView style={styles.safe}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Watchlist</Text>
+          <Text style={styles.title}>My Notes</Text>
           <Text style={styles.subtitle}>
             {entries.length === 0
-              ? 'No stocks yet'
-              : `${entries.length} stock${entries.length !== 1 ? 's' : ''}`}
+              ? 'No concepts saved yet'
+              : `${entries.length} concept${entries.length !== 1 ? 's' : ''} saved`}
           </Text>
         </View>
 
         {/* List */}
         {entries.length === 0 ? (
-          <WatchlistEmpty />
+          <NotesEmpty />
         ) : (
           <FlatList
             data={entries}
-            keyExtractor={(item) => item.stock.ticker}
+            keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
@@ -70,6 +64,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   listContent: {
+    paddingTop: SPACING.xs,
     paddingBottom: SPACING['3xl'],
   },
 });

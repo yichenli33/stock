@@ -2,13 +2,13 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 
-export default function WatchlistEmpty() {
+export default function NotesEmpty() {
   return (
     <View style={styles.container}>
-      <Text style={styles.emoji}>⭐</Text>
-      <Text style={styles.title}>Your watchlist is empty</Text>
+      <Text style={styles.emoji}>📭</Text>
+      <Text style={styles.title}>No saved notes yet</Text>
       <Text style={styles.subtitle}>
-        Swipe right or tap "Interested" on a stock card to add it to your watchlist.
+        Swipe right or tap "Save to Notes" on today's concept to save it here.
       </Text>
     </View>
   );

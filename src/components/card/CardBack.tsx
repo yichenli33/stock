@@ -1,106 +1,59 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stock } from '../../types/stock';
-import { RecommendationType } from '../../types/stock';
+import { KnowledgeCard } from '../../types/knowledge';
+import { getCategoryById } from '../../constants/categories';
+import Tag from '../ui/Tag';
 import Divider from '../ui/Divider';
 import { COLORS, GRADIENTS, RADIUS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 
 interface CardBackProps {
-  stock: Stock;
-  type: RecommendationType;
+  card: KnowledgeCard;
 }
 
-function ScoreBar({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <View style={styles.scoreRow}>
-      <Text style={styles.scoreLabel}>{label}</Text>
-      <View style={styles.scoreBarTrack}>
-        <View style={[styles.scoreBarFill, { width: `${value}%`, backgroundColor: color }]} />
-      </View>
-      <Text style={[styles.scoreValue, { color }]}>{value}</Text>
-    </View>
-  );
-}
-
-export default function CardBack({ stock, type }: CardBackProps) {
-  const isProprietary = type === 'proprietary';
-  const accentColor = stock.accentColor;
+export default function CardBack({ card }: CardBackProps) {
+  const category = getCategoryById(card.category);
 
   return (
     <LinearGradient colors={GRADIENTS.cardPremium} style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.ticker}>{stock.ticker}</Text>
-          <View style={[styles.typeBadge, { backgroundColor: accentColor + '20' }]}>
-            <Text style={[styles.typeLabel, { color: accentColor }]}>
-              {isProprietary ? '⚡ Proprietary' : '🏛 Institutional'}
-            </Text>
-          </View>
-        </View>
+        <Text style={[styles.categoryHeader, { color: card.accentColor }]}>
+          {category.emoji} {category.label}
+        </Text>
+        <Text style={styles.cardTitle}>{card.title}</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Company description */}
-        <Text style={styles.sectionTitle}>About</Text>
-        <Text style={styles.description}>{stock.description}</Text>
+        {/* Explanation */}
+        <Text style={styles.sectionTitle}>Explanation</Text>
+        <Text style={styles.bodyText}>{card.explanation}</Text>
 
         <Divider />
 
-        {/* Why recommended */}
-        <Text style={styles.sectionTitle}>Why Recommended</Text>
-        <Text style={styles.whyText}>
-          {isProprietary ? stock.whyRecommendedProprietary : stock.whyRecommendedInstitutional}
-        </Text>
+        {/* Example */}
+        <Text style={styles.sectionTitle}>Example</Text>
+        <View style={[styles.highlightBox, { borderLeftColor: card.accentColor }]}>
+          <Text style={styles.highlightText}>{card.example}</Text>
+        </View>
 
         <Divider />
 
-        {isProprietary ? (
-          <>
-            {/* Proprietary Score Breakdown */}
-            <View style={styles.scoreSection}>
-              <View style={styles.scoreTotalRow}>
-                <Text style={styles.sectionTitle}>Performance Score</Text>
-                <View style={[styles.totalScoreBadge, { backgroundColor: accentColor }]}>
-                  <Text style={styles.totalScoreText}>{stock.proprietaryScore.total}</Text>
-                </View>
-              </View>
-              <ScoreBar label="Momentum" value={stock.proprietaryScore.momentum} color={COLORS.positive} />
-              <ScoreBar label="Fundamentals" value={stock.proprietaryScore.fundamentals} color={COLORS.accent} />
-              <ScoreBar label="Trend" value={stock.proprietaryScore.trend} color={COLORS.accentLight} />
-              <ScoreBar label="Low Volatility" value={stock.proprietaryScore.volatility} color={COLORS.financials} />
-              <ScoreBar label="Sentiment" value={stock.proprietaryScore.sentiment} color={COLORS.consumer} />
-            </View>
-          </>
-        ) : (
-          <>
-            {/* Institutional holders */}
-            <Text style={styles.sectionTitle}>Key Institutional Holders</Text>
-            <View style={styles.holdersSection}>
-              {stock.institutionalHolders.slice(0, 3).map((holder, i) => (
-                <View key={i} style={styles.holderRow}>
-                  <View style={styles.holderLeft}>
-                    <Text style={styles.holderIndex}>{i + 1}</Text>
-                    <Text style={styles.holderName}>{holder.name}</Text>
-                  </View>
-                  <Text style={[styles.holderPct, { color: accentColor }]}>
-                    {holder.holdingPercent.toFixed(1)}%
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </>
-        )}
+        {/* Fun Fact */}
+        <Text style={styles.sectionTitle}>Fun Fact</Text>
+        <View style={styles.funFactRow}>
+          <Text style={styles.funFactIcon}>💡</Text>
+          <Text style={styles.bodyText}>{card.funFact}</Text>
+        </View>
 
-        {/* Risk badge */}
-        <View style={styles.riskRow}>
-          <Text style={styles.riskLabel}>Risk Level:</Text>
-          <View style={[styles.riskBadge, { backgroundColor: riskColor(stock.riskLevel) + '20' }]}>
-            <Text style={[styles.riskText, { color: riskColor(stock.riskLevel) }]}>
-              {stock.riskLevel.toUpperCase()}
-            </Text>
-          </View>
+        <Divider />
+
+        {/* Related Concepts */}
+        <Text style={styles.sectionTitle}>Related Concepts</Text>
+        <View style={styles.tagsRow}>
+          {card.relatedConcepts.map((concept) => (
+            <Tag key={concept} label={concept} color={card.accentColor} />
+          ))}
         </View>
 
         {/* Back flip hint */}
@@ -110,12 +63,6 @@ export default function CardBack({ stock, type }: CardBackProps) {
   );
 }
 
-function riskColor(level: string): string {
-  if (level === 'low') return COLORS.positive;
-  if (level === 'medium') return COLORS.accent;
-  return COLORS.negative;
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -123,141 +70,69 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: SPACING.xs,
     marginBottom: SPACING.base,
   },
-  headerLeft: { gap: SPACING.xs },
-  ticker: {
+  categoryHeader: {
+    fontSize: TYPOGRAPHY.sm,
+    fontWeight: TYPOGRAPHY.semibold,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  cardTitle: {
     fontSize: TYPOGRAPHY['2xl'],
     fontWeight: TYPOGRAPHY.bold,
     color: COLORS.textPrimary,
   },
-  typeBadge: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 3,
-    borderRadius: RADIUS.full,
-    alignSelf: 'flex-start',
+  scrollContent: {
+    gap: SPACING.sm,
+    paddingBottom: SPACING.base,
   },
-  typeLabel: {
-    fontSize: TYPOGRAPHY.xs,
-    fontWeight: TYPOGRAPHY.semibold,
-  },
-  scrollContent: { gap: SPACING.sm, paddingBottom: SPACING.base },
   sectionTitle: {
-    fontSize: TYPOGRAPHY.sm,
+    fontSize: TYPOGRAPHY.xs,
     fontWeight: TYPOGRAPHY.semibold,
     color: COLORS.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: SPACING.xs,
   },
-  description: {
+  bodyText: {
     fontSize: TYPOGRAPHY.sm,
     color: COLORS.textSecondary,
     lineHeight: TYPOGRAPHY.sm * 1.6,
-  },
-  whyText: {
-    fontSize: TYPOGRAPHY.sm,
-    color: COLORS.textSecondary,
-    lineHeight: TYPOGRAPHY.sm * 1.6,
-  },
-  scoreSection: { gap: SPACING.sm },
-  scoreTotalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.xs,
-  },
-  totalScoreBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: RADIUS.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  totalScoreText: {
-    fontSize: TYPOGRAPHY.base,
-    fontWeight: TYPOGRAPHY.bold,
-    color: COLORS.textPrimary,
-  },
-  scoreRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  scoreLabel: {
-    fontSize: TYPOGRAPHY.xs,
-    color: COLORS.textSecondary,
-    width: 80,
-  },
-  scoreBarTrack: {
     flex: 1,
-    height: 6,
-    backgroundColor: COLORS.border,
-    borderRadius: RADIUS.full,
-    overflow: 'hidden',
   },
-  scoreBarFill: {
-    height: '100%',
-    borderRadius: RADIUS.full,
-  },
-  scoreValue: {
-    fontSize: TYPOGRAPHY.xs,
-    fontWeight: TYPOGRAPHY.bold,
-    width: 28,
-    textAlign: 'right',
-  },
-  holdersSection: { gap: SPACING.md },
-  holderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  highlightBox: {
     backgroundColor: COLORS.bgCard,
     borderRadius: RADIUS.md,
+    borderLeftWidth: 3,
     padding: SPACING.md,
   },
-  holderLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.md, flex: 1 },
-  holderIndex: {
-    fontSize: TYPOGRAPHY.xs,
-    color: COLORS.textTertiary,
-    width: 16,
-    textAlign: 'center',
-  },
-  holderName: {
-    fontSize: TYPOGRAPHY.sm,
-    color: COLORS.textPrimary,
-    flex: 1,
-  },
-  holderPct: {
-    fontSize: TYPOGRAPHY.base,
-    fontWeight: TYPOGRAPHY.bold,
-  },
-  riskRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    marginTop: SPACING.xs,
-  },
-  riskLabel: {
+  highlightText: {
     fontSize: TYPOGRAPHY.sm,
     color: COLORS.textSecondary,
+    lineHeight: TYPOGRAPHY.sm * 1.6,
+    fontStyle: 'italic',
   },
-  riskBadge: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 3,
-    borderRadius: RADIUS.full,
+  funFactRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    alignItems: 'flex-start',
   },
-  riskText: {
-    fontSize: TYPOGRAPHY.xs,
-    fontWeight: TYPOGRAPHY.bold,
+  funFactIcon: {
+    fontSize: 18,
+    lineHeight: TYPOGRAPHY.sm * 1.6,
+  },
+  tagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.xs,
   },
   flipHint: {
     textAlign: 'center',
     fontSize: TYPOGRAPHY.xs,
     color: COLORS.textTertiary,
     fontStyle: 'italic',
-    marginTop: SPACING.sm,
+    marginTop: SPACING.md,
   },
 });

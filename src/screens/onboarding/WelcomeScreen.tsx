@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,8 +9,6 @@ import { COLORS, GRADIENTS, SPACING, TYPOGRAPHY, RADIUS } from '../../constants/
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'Welcome'>;
 
-const { width, height } = Dimensions.get('window');
-
 export default function WelcomeScreen({ navigation }: Props) {
   return (
     <LinearGradient colors={GRADIENTS.background} style={styles.container}>
@@ -19,26 +17,26 @@ export default function WelcomeScreen({ navigation }: Props) {
         <View style={styles.hero}>
           <View style={styles.logoContainer}>
             <LinearGradient colors={GRADIENTS.accent} style={styles.logoGradient}>
-              <Text style={styles.logoEmoji}>📈</Text>
+              <Text style={styles.logoEmoji}>📚</Text>
             </LinearGradient>
           </View>
-          <Text style={styles.appName}>Daily Stock Card</Text>
-          <Text style={styles.tagline}>One stock. One decision. Every day.</Text>
+          <Text style={styles.appName}>Daily Knowledge</Text>
+          <Text style={styles.tagline}>One concept. One day. Endlessly curious.</Text>
         </View>
 
         {/* Feature list */}
         <View style={styles.features}>
-          <FeatureRow icon="🎯" text="Curated stock picks, tailored to you" />
-          <FeatureRow icon="💡" text="Two recommendation types — algorithm & institutional" />
-          <FeatureRow icon="⭐" text="Build your watchlist with a single swipe" />
-          <FeatureRow icon="📊" text="Visual price charts across 1W · 1M · 3M" />
+          <FeatureRow icon="🧠" text="One curated concept per day across 8 knowledge domains" />
+          <FeatureRow icon="💡" text="Flip the card for a deep dive with examples & fun facts" />
+          <FeatureRow icon="⭐" text="Save concepts to My Notes with a single swipe" />
+          <FeatureRow icon="🎓" text="Tailored difficulty — Beginner to Advanced" />
         </View>
 
         {/* CTA */}
         <View style={styles.cta}>
           <Button
             label="Get Started"
-            onPress={() => navigation.navigate('PreferenceSector')}
+            onPress={() => navigation.navigate('PreferenceCategory')}
             variant="primary"
             size="large"
           />

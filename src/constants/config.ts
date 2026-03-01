@@ -11,13 +11,6 @@ export const CONFIG = {
   FLIP_DURATION: 400,
   STAGGER_DELAY: 50,
 
-  // Watchlist
-  MAX_WATCHLIST_ITEMS: 50,
-
-  // Chart
-  PRICE_HISTORY_DAYS: 90,
-  DEFAULT_TIMEFRAME: '1M' as const,
+  // Notes
+  MAX_NOTES_ITEMS: 50,
 };
-
-export type Timeframe = '1W' | '1M' | '3M';
-export const TIMEFRAMES: Timeframe[] = ['1W', '1M', '3M'];

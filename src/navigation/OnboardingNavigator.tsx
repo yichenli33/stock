@@ -1,13 +1,13 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
-import PreferenceSectorScreen from '../screens/onboarding/PreferenceSectorScreen';
-import PreferenceRiskScreen from '../screens/onboarding/PreferenceRiskScreen';
+import PreferenceCategoryScreen from '../screens/onboarding/PreferenceCategoryScreen';
+import PreferenceLevelScreen from '../screens/onboarding/PreferenceLevelScreen';
 
 export type OnboardingStackParamList = {
   Welcome: undefined;
-  PreferenceSector: undefined;
-  PreferenceRisk: undefined;
+  PreferenceCategory: undefined;
+  PreferenceLevel: undefined;
 };
 
 const Stack = createNativeStackNavigator<OnboardingStackParamList>();
@@ -22,8 +22,8 @@ export default function OnboardingNavigator() {
       }}
     >
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
-      <Stack.Screen name="PreferenceSector" component={PreferenceSectorScreen} />
-      <Stack.Screen name="PreferenceRisk" component={PreferenceRiskScreen} />
+      <Stack.Screen name="PreferenceCategory" component={PreferenceCategoryScreen} />
+      <Stack.Screen name="PreferenceLevel" component={PreferenceLevelScreen} />
     </Stack.Navigator>
   );
 }

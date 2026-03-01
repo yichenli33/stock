@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePreferencesStore } from '../../store/usePreferencesStore';
-import { useWatchlistStore } from '../../store/useWatchlistStore';
+import { useNotesStore } from '../../store/useNotesStore';
 import { useUIStore } from '../../store/useUIStore';
 import Divider from '../../components/ui/Divider';
 import { COLORS, GRADIENTS, RADIUS, SPACING, TYPOGRAPHY } from '../../constants/theme';
@@ -42,14 +42,21 @@ function SettingRow({ icon, label, value, onPress, destructive, rightElement }: 
 }
 
 export default function SettingsScreen() {
-  const { selectedSectors, riskTolerance, resetPreferences } = usePreferencesStore();
-  const { entries, clearWatchlist } = useWatchlistStore();
+  const { selectedCategories, learningLevel, resetPreferences } = usePreferencesStore();
+  const { entries, clearNotes } = useNotesStore();
   const { showSnackbar } = useUIStore();
+
+  const levelLabel =
+    learningLevel === 'beginner'
+      ? 'Beginner'
+      : learningLevel === 'intermediate'
+      ? 'Intermediate'
+      : 'Advanced';
 
   const handleResetOnboarding = () => {
     Alert.alert(
       'Reset Onboarding',
-      'This will clear your preferences and show the onboarding flow again. Your watchlist will be preserved.',
+      'This will clear your preferences and show the onboarding flow again. Your notes will be preserved.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -64,29 +71,27 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleClearWatchlist = () => {
+  const handleClearNotes = () => {
     if (entries.length === 0) {
-      showSnackbar('Your watchlist is already empty', 'info');
+      showSnackbar('Your notes are already empty', 'info');
       return;
     }
     Alert.alert(
-      'Clear Watchlist',
-      `Remove all ${entries.length} stocks from your watchlist?`,
+      'Clear Notes',
+      `Remove all ${entries.length} saved concept${entries.length !== 1 ? 's' : ''}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Clear All',
           style: 'destructive',
           onPress: () => {
-            clearWatchlist();
-            showSnackbar('Watchlist cleared', 'info');
+            clearNotes();
+            showSnackbar('Notes cleared', 'info');
           },
         },
       ],
     );
   };
-
-  const riskLabel = riskTolerance < 30 ? 'Conservative' : riskTolerance < 70 ? 'Balanced' : 'Aggressive';
 
   return (
     <LinearGradient colors={GRADIENTS.background} style={styles.container}>
@@ -97,38 +102,38 @@ export default function SettingsScreen() {
             <Text style={styles.title}>Settings</Text>
           </View>
 
-          {/* Profile section */}
+          {/* Preferences section */}
           <View style={styles.section}>
             <Text style={styles.sectionHeader}>PREFERENCES</Text>
             <View style={styles.sectionCard}>
               <SettingRow
-                icon="📊"
-                label="Sectors"
+                icon="📂"
+                label="Categories"
                 value={
-                  selectedSectors.length === 0
-                    ? 'All sectors'
-                    : `${selectedSectors.length} selected`
+                  selectedCategories.length === 0
+                    ? 'All categories'
+                    : `${selectedCategories.length} selected`
                 }
               />
               <Divider style={{ marginVertical: 0, marginHorizontal: SPACING.base }} />
-              <SettingRow icon="⚖️" label="Risk Tolerance" value={riskLabel} />
+              <SettingRow icon="🎓" label="Learning Level" value={levelLabel} />
             </View>
           </View>
 
-          {/* Watchlist section */}
+          {/* Notes section */}
           <View style={styles.section}>
-            <Text style={styles.sectionHeader}>WATCHLIST</Text>
+            <Text style={styles.sectionHeader}>MY NOTES</Text>
             <View style={styles.sectionCard}>
               <SettingRow
-                icon="⭐"
-                label="Saved Stocks"
-                value={`${entries.length} stock${entries.length !== 1 ? 's' : ''}`}
+                icon="📝"
+                label="Saved Concepts"
+                value={`${entries.length} concept${entries.length !== 1 ? 's' : ''}`}
               />
               <Divider style={{ marginVertical: 0, marginHorizontal: SPACING.base }} />
               <SettingRow
                 icon="🗑️"
-                label="Clear Watchlist"
-                onPress={handleClearWatchlist}
+                label="Clear Notes"
+                onPress={handleClearNotes}
                 destructive
               />
             </View>
@@ -151,17 +156,16 @@ export default function SettingsScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionHeader}>ABOUT</Text>
             <View style={styles.sectionCard}>
-              <SettingRow icon="ℹ️" label="Version" value="1.0.0 (Skeleton)" />
+              <SettingRow icon="ℹ️" label="Version" value="1.0.0" />
               <Divider style={{ marginVertical: 0, marginHorizontal: SPACING.base }} />
-              <SettingRow icon="📋" label="Data" value="Mock data only" />
+              <SettingRow icon="📋" label="Content" value="Curated mock data" />
             </View>
           </View>
 
-          {/* Disclaimer */}
+          {/* About text */}
           <View style={styles.disclaimer}>
             <Text style={styles.disclaimerText}>
-              ⚠️ Daily Stock Card is for informational purposes only. All stock picks shown are
-              mock data for demonstration. This is not financial advice.
+              📚 Daily Knowledge surfaces one new concept per day across Technology, Science, History, Philosophy, Economics, Psychology, Mathematics, and Art & Culture.
             </Text>
           </View>
         </ScrollView>

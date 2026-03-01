@@ -1,10 +1,9 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stock, RecommendationType } from '../../types/stock';
-import { Timeframe } from '../../constants/config';
+import { KnowledgeCard } from '../../types/knowledge';
 import CardFlipWrapper from './CardFlipWrapper';
 import CardFront from './CardFront';
 import CardBack from './CardBack';
@@ -15,27 +14,21 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.88;
 const CARD_HEIGHT = CARD_WIDTH * 1.42;
 
-interface StockCardProps {
-  stock: Stock;
-  type: RecommendationType;
-  timeframe: Timeframe;
+interface KnowledgeCardProps {
+  card: KnowledgeCard;
   isFlipped: boolean;
   onFlipChange: (flipped: boolean) => void;
-  onTimeframeChange: (tf: Timeframe) => void;
   onDecision: (decision: 'interested' | 'not_interested') => void;
   hasResponded: boolean;
 }
 
-export default function StockCard({
-  stock,
-  type,
-  timeframe,
+export default function KnowledgeCardView({
+  card,
   isFlipped,
   onFlipChange,
-  onTimeframeChange,
   onDecision,
   hasResponded,
-}: StockCardProps) {
+}: KnowledgeCardProps) {
   const { panGesture, cardStyle, interestedOverlayStyle, notInterestedOverlayStyle } =
     useSwipeGesture({
       onDecision,
@@ -45,7 +38,7 @@ export default function StockCard({
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.cardWrapper, SHADOWS.card, cardStyle]}>
-        {/* Interested overlay (green, right swipe) */}
+        {/* Save overlay (green, right swipe) */}
         <Animated.View
           style={[styles.overlay, styles.interestedOverlay, interestedOverlayStyle]}
           pointerEvents="none"
@@ -56,10 +49,10 @@ export default function StockCard({
             end={{ x: 1, y: 0 }}
             style={StyleSheet.absoluteFillObject}
           />
-          <Text style={[styles.overlayLabel, { color: COLORS.positive }]}>INTERESTED ⭐</Text>
+          <Text style={[styles.overlayLabel, { color: COLORS.positive }]}>SAVE ⭐</Text>
         </Animated.View>
 
-        {/* Not interested overlay (red, left swipe) */}
+        {/* Skip overlay (red, left swipe) */}
         <Animated.View
           style={[styles.overlay, styles.notInterestedOverlay, notInterestedOverlayStyle]}
           pointerEvents="none"
@@ -70,20 +63,14 @@ export default function StockCard({
             end={{ x: 1, y: 0 }}
             style={StyleSheet.absoluteFillObject}
           />
-          <Text style={[styles.overlayLabel, { color: COLORS.negative }]}>PASS ✗</Text>
+          <Text style={[styles.overlayLabel, { color: COLORS.negative }]}>SKIP ✗</Text>
         </Animated.View>
 
         <CardFlipWrapper
           isFlipped={isFlipped}
           onFlipChange={onFlipChange}
-          front={
-            <CardFront
-              stock={stock}
-              timeframe={timeframe}
-              onTimeframeChange={onTimeframeChange}
-            />
-          }
-          back={<CardBack stock={stock} type={type} />}
+          front={<CardFront card={card} />}
+          back={<CardBack card={card} />}
         />
       </Animated.View>
     </GestureDetector>

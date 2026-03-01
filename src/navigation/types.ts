@@ -9,11 +9,11 @@ export type RootStackParamList = {
 
 export type TabParamList = {
   Home: undefined;
-  Watchlist: undefined;
+  Notes: undefined;
   Settings: undefined;
 };
 
-export type OnboardingScreenNames = 'Welcome' | 'PreferenceSector' | 'PreferenceRisk';
+export type OnboardingScreenNames = 'Welcome' | 'PreferenceCategory' | 'PreferenceLevel';
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;

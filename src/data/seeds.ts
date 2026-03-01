@@ -1,5 +1,5 @@
-import { MOCK_STOCKS } from './mockStocks';
-import { Stock } from '../types/stock';
+import { MOCK_KNOWLEDGE_CARDS } from './mockKnowledgeCards';
+import { KnowledgeCard } from '../types/knowledge';
 
 /**
  * Simple hash of a string → integer
@@ -20,26 +20,11 @@ export function getTodayISO(): string {
 }
 
 /**
- * Returns the daily proprietary stock pick for a given date.
- * The same date always returns the same stock (deterministic).
+ * Returns the daily knowledge card for a given date.
+ * The same date always returns the same card (deterministic).
  */
-export function getDailyProprietaryStock(dateISO: string = getTodayISO()): Stock {
-  const hash = hashString(dateISO + '-proprietary');
-  const index = hash % MOCK_STOCKS.length;
-  return MOCK_STOCKS[index];
-}
-
-/**
- * Returns the daily institutional stock pick for a given date.
- * Different from the proprietary pick (uses different salt).
- */
-export function getDailyInstitutionalStock(dateISO: string = getTodayISO()): Stock {
-  const hash = hashString(dateISO + '-institutional');
-  // Ensure it's different from proprietary pick
-  const proprietaryHash = hashString(dateISO + '-proprietary');
-  let index = hash % MOCK_STOCKS.length;
-  if (index === proprietaryHash % MOCK_STOCKS.length) {
-    index = (index + 1) % MOCK_STOCKS.length;
-  }
-  return MOCK_STOCKS[index];
+export function getDailyCard(dateISO: string = getTodayISO()): KnowledgeCard {
+  const hash = hashString(dateISO + '-daily');
+  const index = hash % MOCK_KNOWLEDGE_CARDS.length;
+  return MOCK_KNOWLEDGE_CARDS[index];
 }

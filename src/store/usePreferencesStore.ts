@@ -1,24 +1,25 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SectorId } from '../constants/sectors';
+import { CategoryId } from '../constants/categories';
+import { Difficulty } from '../types/knowledge';
 
 interface PreferencesStore {
   onboardingComplete: boolean;
-  selectedSectors: SectorId[];
-  riskTolerance: number; // 0–100
+  selectedCategories: CategoryId[];
+  learningLevel: Difficulty;
 
   setOnboardingComplete: (value: boolean) => void;
-  setSectors: (sectors: SectorId[]) => void;
-  toggleSector: (sector: SectorId) => void;
-  setRiskTolerance: (value: number) => void;
+  setCategories: (categories: CategoryId[]) => void;
+  toggleCategory: (category: CategoryId) => void;
+  setLearningLevel: (level: Difficulty) => void;
   resetPreferences: () => void;
 }
 
 const INITIAL_STATE = {
   onboardingComplete: false,
-  selectedSectors: [] as SectorId[],
-  riskTolerance: 50,
+  selectedCategories: [] as CategoryId[],
+  learningLevel: 'beginner' as Difficulty,
 };
 
 export const usePreferencesStore = create<PreferencesStore>()(
@@ -28,18 +29,18 @@ export const usePreferencesStore = create<PreferencesStore>()(
 
       setOnboardingComplete: (value) => set({ onboardingComplete: value }),
 
-      setSectors: (sectors) => set({ selectedSectors: sectors }),
+      setCategories: (categories) => set({ selectedCategories: categories }),
 
-      toggleSector: (sector) => {
-        const { selectedSectors } = get();
-        if (selectedSectors.includes(sector)) {
-          set({ selectedSectors: selectedSectors.filter((s) => s !== sector) });
+      toggleCategory: (category) => {
+        const { selectedCategories } = get();
+        if (selectedCategories.includes(category)) {
+          set({ selectedCategories: selectedCategories.filter((c) => c !== category) });
         } else {
-          set({ selectedSectors: [...selectedSectors, sector] });
+          set({ selectedCategories: [...selectedCategories, category] });
         }
       },
 
-      setRiskTolerance: (value) => set({ riskTolerance: value }),
+      setLearningLevel: (level) => set({ learningLevel: level }),
 
       resetPreferences: () => set(INITIAL_STATE),
     }),

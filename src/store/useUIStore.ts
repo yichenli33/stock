@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type ActiveTab = 'home' | 'watchlist' | 'settings';
+export type ActiveTab = 'home' | 'notes' | 'settings';
 
 interface SnackbarConfig {
   message: string;
@@ -11,22 +11,19 @@ interface SnackbarConfig {
 interface UIStore {
   activeTab: ActiveTab;
   snackbar: SnackbarConfig;
-  isProprietaryCardFlipped: boolean;
-  isInstitutionalCardFlipped: boolean;
+  isCardFlipped: boolean;
 
   setActiveTab: (tab: ActiveTab) => void;
   showSnackbar: (message: string, type?: SnackbarConfig['type']) => void;
   hideSnackbar: () => void;
-  setProprietaryFlipped: (flipped: boolean) => void;
-  setInstitutionalFlipped: (flipped: boolean) => void;
-  resetFlips: () => void;
+  setIsCardFlipped: (flipped: boolean) => void;
+  resetFlip: () => void;
 }
 
 export const useUIStore = create<UIStore>((set) => ({
   activeTab: 'home',
   snackbar: { message: '', type: 'success', visible: false },
-  isProprietaryCardFlipped: false,
-  isInstitutionalCardFlipped: false,
+  isCardFlipped: false,
 
   setActiveTab: (tab) => set({ activeTab: tab }),
 
@@ -36,10 +33,7 @@ export const useUIStore = create<UIStore>((set) => ({
   hideSnackbar: () =>
     set((state) => ({ snackbar: { ...state.snackbar, visible: false } })),
 
-  setProprietaryFlipped: (flipped) => set({ isProprietaryCardFlipped: flipped }),
+  setIsCardFlipped: (flipped) => set({ isCardFlipped: flipped }),
 
-  setInstitutionalFlipped: (flipped) => set({ isInstitutionalCardFlipped: flipped }),
-
-  resetFlips: () =>
-    set({ isProprietaryCardFlipped: false, isInstitutionalCardFlipped: false }),
+  resetFlip: () => set({ isCardFlipped: false }),
 }));
